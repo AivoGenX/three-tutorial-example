@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>three.js webgl - geometry - cube</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <link type="text/css" rel="stylesheet" href="https://threejs.org/examples/main.css" />
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="importmap">
+      {
+        "imports": {
+          "three": "https://threejs.org/build/three.module.js",
+          "three/addons/": "https://threejs.org/examples/jsm/"
+        }
+      }
+    </script>
+
+  <script type="module">
+
+    //  增加光照的情况
+    // MeshPhongMaterial和 MeshBasicMaterial
+
+    import * as THREE from "three";
+    let camera, scene, renderer;
+    let mesh;
+
+    init();
+
+    function init() {
+      // 相机
+      camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.z = 20;
+
+      // 场景
+      scene = new THREE.Scene();
+
+
+      // 创建环境光
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // 柔和的灰色光
+      scene.add(ambientLight);
+
+      let directionalLight = new THREE.DirectionalLight(0xffffff, 10);
+      directionalLight.position.set(10, 5, 10);
+      directionalLight.castShadow = true; // 启用阴影
+      scene.add(directionalLight);
+
+
+
+      //几何
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+      // const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+
+      mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(0, 0, 8);
+      // 对于球体和立方体，我们需要设置他们都能投射阴影或者被投射阴影
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+
+      // 创建一个平面，用于接收阴影 [地面能被投射阴影，这样我们不需要关心地面投射阴影的问题]
+      const groundGeometry = new THREE.PlaneGeometry(50, 50, 1, 1);
+      const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 });
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = - Math.PI / 3;
+      ground.receiveShadow = true; // 启用阴影接收
+      scene.add(ground);
+
+
+      // 渲染器
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+
+      renderer.shadowMap.enabled = true;
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setAnimationLoop(animate);
+      document.body.appendChild(renderer.domElement);
+
+      //
+
+      window.addEventListener("resize", onWindowResize);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      mesh.rotation.x += 0.005;
+      mesh.rotation.y += 0.01;
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+
+</html>
